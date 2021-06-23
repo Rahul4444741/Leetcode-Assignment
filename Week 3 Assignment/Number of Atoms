@@ -1,0 +1,134 @@
+class Solution {
+    
+    public String countOfAtoms(String formula) {
+
+        Map<String, Integer> atomsCount = doCountAtoms(formula);
+
+        List<String> atomNames = new ArrayList<>(atomsCount.keySet());
+        Collections.sort(atomNames);
+
+        StringBuilder resultBuilder = new StringBuilder();
+
+        for (String atomName : atomNames) {
+            int count = atomsCount.get(atomName);
+            resultBuilder.append(atomName);
+
+            if (count > 1) {
+                resultBuilder.append(count);
+            }
+        }
+
+        return resultBuilder.toString();
+    }
+
+    private Map<String, Integer> doCountAtoms(String formulaPart) {
+        Map<String, Integer> formulaPartCountMap = new HashMap<>();
+
+        for (int i = 0; i < formulaPart.length();) {
+            if (formulaPart.charAt(i) == '(') {
+                i++;
+
+                String group = extractGroup(formulaPart, i);
+                i += group.length() + 1;
+
+                String groupCount = extractCount(formulaPart, i);
+                i += groupCount.length();
+
+                int count = updateCount(groupCount);
+
+                Map<String, Integer> groupCountMap = doCountAtoms(group);
+
+                for (String atomName : groupCountMap.keySet()) {
+                    groupCountMap.put(atomName, groupCountMap.get(atomName) * count);
+                    formulaPartCountMap.put(atomName,
+                            formulaPartCountMap.getOrDefault(atomName, 0) + groupCountMap.get(atomName));
+                }
+
+            } else {
+                String atomName = exctractAtom(formulaPart, i);
+                i += atomName.length();
+
+                String atomCount = extractCount(formulaPart, i);
+                i += atomCount.length();
+
+                int count = updateCount(atomCount);
+                formulaPartCountMap.put(atomName, formulaPartCountMap.getOrDefault(atomName, 0) + count);
+            }
+        }
+
+        return formulaPartCountMap;
+    }
+
+    private int updateCount(String value) {
+        if (value.length() == 0) {
+            return 1;
+        }
+        return Integer.parseInt(value);
+    }
+
+    private String extractCount(String formula, int startIndex) {
+
+        if (startIndex >= formula.length() || !Character.isDigit(formula.charAt(startIndex))) {
+            return "";
+        }
+
+        StringBuilder count = new StringBuilder(charAt(formula, startIndex));
+
+        for (int i = startIndex + 1; i < formula.length(); i++) {
+            char c = formula.charAt(i);
+
+            if (!Character.isDigit(c)) {
+                break;
+            }
+
+            count.append(c);
+        }
+
+        return count.toString();
+    }
+
+    private String exctractAtom(String formula, int startIndex) {
+        StringBuilder atom = new StringBuilder(charAt(formula, startIndex));
+
+        for (int i = startIndex + 1; i < formula.length(); i++) {
+            char c = formula.charAt(i);
+
+            if (c == '(' || c == ')' || Character.isDigit(c) || Character.isUpperCase(c)) {
+                break;
+            }
+
+            atom.append(c);
+        }
+
+        return atom.toString();
+    }
+
+    private String extractGroup(String formula, int startIndex) {
+        StringBuilder groupBuilder = new StringBuilder(charAt(formula, startIndex));
+        int parCount = 1 + (groupBuilder.toString().equals("(") ? 1 : 0);
+
+        for (int i = startIndex + 1; i < formula.length(); i++) {
+            char currentChar = formula.charAt(i);
+
+            if (currentChar == '(') {
+                parCount++;
+            }
+
+            if (currentChar == ')') {
+                parCount--;
+
+                if (parCount == 0) {
+                    break;
+                }
+            }
+
+            groupBuilder.append(currentChar);
+        }
+
+        return groupBuilder.toString();
+    }
+
+    private String charAt(String value, int index) {
+        return String.valueOf(value.charAt(index));
+    }
+}
