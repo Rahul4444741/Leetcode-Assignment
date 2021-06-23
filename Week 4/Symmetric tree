@@ -1,0 +1,24 @@
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        return mirror(root, root);
+    }
+
+    private boolean mirror(TreeNode root1, TreeNode root2) {
+        // 递归的终止条件
+        if (root1 == null && root2 == null) {
+            return true;
+        }
+        if (root1 == null || root2 == null || root1.val != root2.val) {
+            return false;
+        }
+
+        // Divide
+        boolean left = mirror(root1.left, root2.right);
+        boolean right = mirror(root1.right, root2.left);
+        // Conquer
+        return left && right;
+    }
+}
